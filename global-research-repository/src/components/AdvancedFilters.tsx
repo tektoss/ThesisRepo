@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 
 export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPapers: (papers: any[]) => void }) {
@@ -19,29 +18,8 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  const applyFilters = async () => {
-    try {
-      let query = supabase.from('global_research_repository').select('*');
-      if (filters.country) query = query.eq('country', filters.country);
-      if (filters.subject) query = query.eq('subject', filters.subject);
-      if (filters.level) query = query.eq('level', filters.level);
-      if (filters.type) query = query.eq('type', filters.type);
-      if (filters.institution) query = query.ilike('institution', `%${filters.institution}%`);
-      if (filters.date) {
-        if (filters.date === 'older') {
-          query = query.lt('submitted', '2020-01-01');
-        } else {
-          query = query.gte('submitted', `${filters.date}-01-01`).lte('submitted', `${filters.date}-12-31`);
-        }
-      }
-      query = query.order('submitted', { ascending: false });
-      const { data, error } = await query;
-      if (error) throw error;
-      setFilteredPapers(data || []);
-    } catch (error) {
-      console.error('Filter failed:', error);
-      setFilteredPapers([]);
-    }
+  const applyFilters = () => {
+    setFilteredPapers([]); // Trigger filtering in parent (page.tsx)
   };
 
   const clearFilters = () => {
@@ -57,17 +35,21 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
   };
 
   return (
-    <div className="filter-section rounded-lg p-6 mb-8">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">{t('advancedSearchFilters')}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">{t('countryRegion')}</label>
+    <div className="card p-8">
+      <div className="mb-6">
+        <h3 className="h3 mb-2">{t('advancedSearchFilters')}</h3>
+        <p className="p-body text-text-secondary">Refine your search with specific criteria</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="space-y-2">
+          <label htmlFor="country" className="form-label">{t('countryRegion')}</label>
           <select
             id="country"
             name="country"
             value={filters.country}
             onChange={handleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('countryRegion')}
           >
             <option value="">{t('allCountries')}</option>
@@ -87,14 +69,15 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             <option value="Peru">{t('peru')}</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">{t('subjectClassification')}</label>
+        
+        <div className="space-y-2">
+          <label htmlFor="subject" className="form-label">{t('subjectClassification')}</label>
           <select
             id="subject"
             name="subject"
             value={filters.subject}
             onChange={handleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('subjectClassification')}
           >
             <option value="">{t('allSubjects')}</option>
@@ -109,14 +92,15 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             <option value="soc">{t('socialSciences')}</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-2">{t('educationLevel')}</label>
+        
+        <div className="space-y-2">
+          <label htmlFor="level" className="form-label">{t('educationLevel')}</label>
           <select
             id="level"
             name="level"
             value={filters.level}
             onChange={handleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('educationLevel')}
           >
             <option value="">{t('allLevels')}</option>
@@ -125,14 +109,15 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             <option value="community">{t('communityBased')}</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">{t('publicationType')}</label>
+        
+        <div className="space-y-2">
+          <label htmlFor="type" className="form-label">{t('publicationType')}</label>
           <select
             id="type"
             name="type"
             value={filters.type}
             onChange={handleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('publicationType')}
           >
             <option value="">{t('allTypes')}</option>
@@ -157,14 +142,15 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             <option value="other">{t('other')}</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">{t('dateRange')}</label>
+        
+        <div className="space-y-2">
+          <label htmlFor="date" className="form-label">{t('dateRange')}</label>
           <select
             id="date"
             name="date"
             value={filters.date}
             onChange={handleFilterChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('dateRange')}
           >
             <option value="">{t('allDates')}</option>
@@ -176,8 +162,9 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             <option value="older">{t('before2020')}</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">{t('institution')}</label>
+        
+        <div className="space-y-2">
+          <label htmlFor="institution" className="form-label">{t('institution')}</label>
           <input
             id="institution"
             type="text"
@@ -185,16 +172,17 @@ export default function AdvancedFilters({ setFilteredPapers }: { setFilteredPape
             value={filters.institution}
             onChange={handleFilterChange}
             placeholder={t('institutionPlaceholder')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="form-input"
             aria-label={t('institution')}
           />
         </div>
       </div>
-      <div className="flex gap-4">
-        <button onClick={applyFilters} className="arxiv-button px-6 py-2 rounded-md font-medium">
+      
+      <div className="flex gap-4 justify-center">
+        <button onClick={applyFilters} className="btn-primary px-8 py-3 font-semibold">
           {t('applyFilters')}
         </button>
-        <button onClick={clearFilters} className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+        <button onClick={clearFilters} className="btn-secondary px-8 py-3 font-semibold">
           {t('clearAll')}
         </button>
       </div>
